@@ -1,12 +1,19 @@
 var http = require('http');
 var express = require("express");
 var RED = require("node-red");
+var path = require("path");
+var fs = require("fs");
 
 // Create an Express app
 var app = express();
 
 // Add a simple route for static content served from 'public'
 app.use("/",express.static("public"));
+
+var userDir = process.env.OPENSHIFT_DATA_DIR||path.join(__dirname, ".node-red");
+// Ensure userDir exists - something that is normally taken care of by
+// localfilesystem storage when running locally
+if (!fs.existsSync(userDir)) fs.mkdirSync(userDir);
 
 // Create a server
 var server = http.createServer(app);
@@ -15,7 +22,7 @@ var server = http.createServer(app);
 var settings = {
     httpAdminRoot:"/red",
     httpNodeRoot: "/api",
-    userDir: process.env.OPENSHIFT_DATA_DIR,
+    userDir: userDir,
     functionGlobalContext: { }    // enables global context
 };
 
