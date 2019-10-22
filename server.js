@@ -3,6 +3,7 @@ var express = require("express");
 var RED = require("node-red");
 var path = require("path");
 var fs = require("fs");
+var bcrypt = require("bcrypt");
 
 // Create an Express app
 var app = express();
@@ -25,6 +26,29 @@ var settings = {
     userDir: userDir,
     functionGlobalContext: { }    // enables global context
 };
+
+if (!settings.adminAuth) {
+  // No user-defined security
+  if (process.env.NODE_RED_USERNAME && process.env.NODE_RED_PASSWORD) {
+    util.log("Enabling adminAuth using NODE_RED_USERNAME/NODE_RED_PASSWORD");
+    var config = {
+        adminAuth: {
+            username: process.env.NODE_RED_USERNAME,
+            password: bcrypt.hashSync(process.env.NODE_RED_PASSWORD, 8),
+            allowAnonymous: (process.env.NODE_RED_GUEST_ACCESS === 'true')
+        }
+    };
+
+    if (runtimeSettings.bluemixConfig && runtimeSettings.bluemixConfig.hasOwnProperty('adminAuth')) {
+        delete runtimeSettings.bluemixConfig.adminAuth;
+        storage.saveSettings(runtimeSettings).then(function () {
+            startNodeRED(config);
+        });
+    } else {
+        startNodeRED(config);
+    }
+  }
+}
 
 // Initialise the runtime with a server and settings
 RED.init(server,settings);
