@@ -32,7 +32,7 @@ if (!settings.adminAuth) {
   if (process.env.NODE_RED_USERNAME && process.env.NODE_RED_PASSWORD) {
     console.log("Enabling adminAuth using NODE_RED_USERNAME/NODE_RED_PASSWORD");
   
-    settings.adminAuth: {
+    settings.adminAuth = {
         username: process.env.NODE_RED_USERNAME,
         password: bcrypt.hashSync(process.env.NODE_RED_PASSWORD, 8),
         allowAnonymous: (process.env.NODE_RED_GUEST_ACCESS === 'true')
