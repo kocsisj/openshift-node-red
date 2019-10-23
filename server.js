@@ -9,7 +9,7 @@ var when = require("when");
 var app = express();
 
 // Add a simple route for static content served from 'public'
-app.use("/", express.static("public"));
+//app.use("/", express.static("public"));
 
 var userDir = process.env.OPENSHIFT_DATA_DIR || path.join(__dirname, ".node-red");
 // Ensure userDir exists - something that is normally taken care of by
@@ -21,8 +21,9 @@ var server = http.createServer(app);
 
 // Create the settings object - see default settings.js file for other options
 var settings = {
+  uiPort: process.env.OPENSHIFT_NODEJS_PORT || 8080,
   httpAdminRoot: "/red",
-  httpNodeRoot: "/api",
+  httpNodeRoot: "/",
   userDir: userDir,
   flowFile: "flows.json",
   functionGlobalContext: {}    // enables global context
@@ -56,13 +57,14 @@ if (!settings.adminAuth) {
 // Initialise the runtime with a server and settings
 RED.init(server, settings);
 
-// Serve the editor UI from /red
-app.use(settings.httpAdminRoot, RED.httpAdmin);
-
-// Serve the http nodes UI from /api
-app.use(settings.httpNodeRoot, RED.httpNode);
-
-server.listen(process.env.OPENSHIFT_NODEJS_PORT || 8080);
-
 // Start the runtime
 RED.start();
+
+// Serve the editor UI
+app.use(settings.httpAdminRoot, RED.httpAdmin);
+
+// Serve the http nodes UI
+app.use(settings.httpNodeRoot, RED.httpNode);
+
+server.listen(settings.uiPort);
+
